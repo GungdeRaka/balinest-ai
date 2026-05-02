@@ -128,7 +128,7 @@ export default function ItineraryPage() {
           initial={{ x: "0%" }}
           animate={{ x: "-100%" }}
           transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1], delay: 0.2 }}
-          className="w-1/2 h-full bg-gradient-to-r from-background to-maroon border-r-4 border-gold shadow-[10px_0_30px_rgba(0,0,0,0.8)] relative"
+          className="w-1/2 h-full bg-linear-to-rrom-background to-maroon border-r-4 border-gold shadow-[10px_0_30px_rgba(0,0,0,0.8)] relative"
         >
           {/* Gate Detailing Placeholder */}
           <div className="absolute right-0 top-0 bottom-0 w-8 bg-[url('/pattern-placeholder.png')] opacity-20"></div>
@@ -142,7 +142,7 @@ export default function ItineraryPage() {
           initial={{ x: "0%" }}
           animate={{ x: "100%" }}
           transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1], delay: 0.2 }}
-          className="w-1/2 h-full bg-gradient-to-l from-background to-maroon border-l-4 border-gold shadow-[-10px_0_30px_rgba(0,0,0,0.8)] relative"
+          className="w-1/2 h-full bg-linear-to-l from-background to-maroon border-l-4 border-gold shadow-[-10px_0_30px_rgba(0,0,0,0.8)] relative"
         >
           {/* Gate Detailing Placeholder */}
           <div className="absolute left-0 top-0 bottom-0 w-8 bg-[url('/pattern-placeholder.png')] opacity-20"></div>
@@ -184,12 +184,12 @@ export default function ItineraryPage() {
               </p>
             )}
             {/* Desktop Tail */}
-            <div className="hidden md:block absolute top-12 -left-4 w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-r-[16px] border-r-[#333]"></div>
-            <div className="hidden md:block absolute top-[49px] -left-[14px] w-0 h-0 border-t-[10px] border-t-transparent border-b-[10px] border-b-transparent border-r-[14px] border-r-[#1a1a1a]"></div>
+            <div className="hidden md:block absolute top-12 -left-4 w-0 h-0 border-t-12 border-t-transparent border-b-12 border-b-transparent border-r-16 border-r-[#333]"></div>
+            <div className="hidden md:block absolute top-[49px] left-[-14px] w-0 h-0 border-t-10 border-t-transparent border-b-10 border-b-transparent border-r-14 border-r-[#1a1a1a]"></div>
             
             {/* Mobile Tail */}
-            <div className="block md:hidden absolute -top-4 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[16px] border-l-transparent border-r-[16px] border-r-transparent border-b-[16px] border-b-[#333]"></div>
-            <div className="block md:hidden absolute -top-[14px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[14px] border-l-transparent border-r-[14px] border-r-transparent border-b-[14px] border-b-[#1a1a1a]"></div>
+            <div className="block md:hidden absolute -top-4 left-1/2 -translate-x-1/2 w-0 h-0 border-l-16 border-l-transparent border-r-16 border-r-transparent border-b-16 border-b-[#333]"></div>
+            <div className="block md:hidden absolute top-[-14px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-14 border-l-transparent border-r-14 border-r-transparent border-b-14 border-b-[#1a1a1a]"></div>
           </div>
         </motion.div>
 
@@ -258,7 +258,7 @@ export default function ItineraryPage() {
                   transition={{ duration: 0.5, delay: dayIndex * 0.15 }}
                   className="bg-[#111] border border-[#333] rounded-2xl overflow-hidden shadow-lg"
                 >
-                  <div className="bg-gradient-to-r from-[#1a1a1a] to-[#222] p-5 border-b border-[#333]">
+                  <div className="bg-linear-to-r from-[#1a1a1a] to-[#222] p-5 border-b border-[#333]">
                     <h4 className="text-gold font-bold text-xl">Day {day.day}: {day.title}</h4>
                   </div>
                   <div className="p-5 flex flex-col gap-4">
@@ -299,7 +299,7 @@ export default function ItineraryPage() {
 
       {/* Calendar Date Modal */}
       {selectedActivityForCalendar && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}

@@ -1,24 +1,57 @@
-# Implementation Plan: BaliNest AI 🌴
+# Implementation Plan: Toggleable AI Restaurant Recommendations 🍽️
+**Feature Objective:** The Gemini AI will generate a contextual restaurant recommendation for each day within the JSON response. However, this data should be hidden by default. A button next to the Day Title will toggle the restaurant card's visibility.
 
-## 1. Junior Developer Tasks: Balinese Glossary & UI Polish
+## Phase 1: Backend System Prompt Update (`app/api/generate-itinerary/route.ts`)
+Update the `systemInstruction` in the Gemini API call to include the `recommended_restaurant` object inside the `day` schema.
 
-### Task 1.1: Interactive Balinese Glossary (Tooltips)
-Implement a tooltip feature for specific Balinese words used throughout the app (e.g., "Suksma", "Astungkara", "Om Swastyastu").
-- **Requirement:** 
-  - On **Desktop**: Show a small container (tooltip) with the word's meaning when hovering.
-  - On **Mobile**: Show the tooltip when the word is clicked/tapped.
-- **Words to include:**
-  - **Om Swastyastu**: A Balinese greeting, meaning "May God bless you" or "May you be in a state of goodness."
-  - **Suksma**: "Thank you."
-  - **Astungkara**: "God willing" or "Hopefully."
-  - **Bli**: A respectful term for an older brother or a peer male.
+**Updated JSON Schema Target:**
+``` json
+"itinerary": [
+  {
+    "day": 1,
+    "theme": "Arrival & Gentle Introduction",
+    "recommended_restaurant": {
+      "name": "Name of a real, family-friendly local restaurant",
+      "cuisine": "Type of food",
+      "why_its_good": "1 sentence on why it fits this family's constraints."
+    },
+    "activities": [ ... ]
+  }
+]
+```
 
-### Task 1.2: Panic Mode State
-Implement a visual feedback loop in the itinerary generator to show Bli Tourah's "overwhelmed" state when the user provides a lot of detail.
-- **Requirement:**
-  - Track the character count of the `<textarea>` in State 2.
-  - When `userInput.length > 120`, switch the Bli Tourah avatar from `bli-tourah-smile.png` to `bli-tourah-panic.png`.
-  - Ensure the transition is smooth (using Framer Motion).
+## Phase 2: Frontend UI State Management
+To manage the toggle state independently for each day, extract the rendering of a single day into a new local component (e.g., <DayCard dayData={day} />).
 
----
+**Component Logic Requirements:**
 
+Import useState from React.
+
+Inside the <DayCard /> component, create a toggle state:
+const [showRestaurant, setShowRestaurant] = useState(false);
+
+## Phase 3: UI Layout & Tailwind Styling
+Update the JSX for the day header to include the toggle button, and conditionally render the restaurant details.
+
+**UI Structure Instructions:**
+
+**The Header:** Place the Day Title/Theme and the Toggle Button in a flexbox row (flex justify-between items-center).
+
+**The Toggle Button:**
+
+**Text:** "Find Recommended Restaurant 🍽️" (If showRestaurant is false) / "Hide Restaurant" (If true).
+
+**Styling:** Small text, subtle styling (e.g., text-xs text-amber-600 hover:text-amber-800 underline px-2 py-1 rounded).
+
+**The Conditional Render:** Below the Day Header (and above or below the activities list), conditionally render the restaurant card.
+
+**if (showRestaurant)** -> Render a Tailwind card.
+
+**Styling for the card:** mt-3 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3 transition-all.
+
+**Content to map:** Render dayData.recommended_restaurant?.name, cuisine, and why_its_good.
+
+## Acceptance Criteria
+Clicking the button on Day 1 opens the restaurant for Day 1 ONLY.
+
+The UI does not break if the AI occasionally forgets to output the recommended_restaurant object (use optional chaining ?.).

@@ -22,15 +22,84 @@ interface Activity {
   description: string;
 }
 
+interface Restaurant {
+  name: string;
+  cuisine: string;
+  why_its_good: string;
+}
+
 interface DayPlan {
   day: number;
   title: string;
+  recommended_restaurant?: Restaurant;
   activities: Activity[];
 }
 
 interface ItineraryResponse {
   insight: string;
   days: DayPlan[];
+}
+
+function DayCard({ day, dayIndex, onAddToCalendar }: { 
+  day: DayPlan, 
+  dayIndex: number, 
+  onAddToCalendar: (activity: Activity) => void 
+}) {
+  const [showRestaurant, setShowRestaurant] = useState(false);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5, delay: dayIndex * 0.15 }}
+      className="bg-[#111] border border-[#333] rounded-2xl overflow-hidden shadow-lg"
+    >
+      <div className="bg-linear-to-r from-[#1a1a1a] to-[#222] p-5 border-b border-[#333] flex justify-between items-center">
+        <h4 className="text-gold font-bold text-xl">Day {day.day}: {day.title}</h4>
+        {day.recommended_restaurant && (
+          <button 
+            onClick={() => setShowRestaurant(!showRestaurant)}
+            className="text-xs text-gold/80 hover:text-gold underline px-2 py-1 rounded transition-colors"
+          >
+            {showRestaurant ? "Hide Restaurant" : "Find Recommended Restaurant 🍽️"}
+          </button>
+        )}
+      </div>
+      
+      {showRestaurant && day.recommended_restaurant && (
+        <motion.div 
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="mx-5 mt-3 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3 transition-all shadow-md"
+        >
+          <div className="text-2xl shrink-0">🍽️</div>
+          <div>
+            <h5 className="text-amber-900 font-bold">{day.recommended_restaurant.name}</h5>
+            <p className="text-xs text-amber-700 mb-1">{day.recommended_restaurant.cuisine}</p>
+            <p className="text-sm text-amber-800 leading-snug">{day.recommended_restaurant.why_its_good}</p>
+          </div>
+        </motion.div>
+      )}
+
+      <div className="p-5 flex flex-col gap-4">
+        {day.activities.map((activity, actIndex) => (
+          <div key={actIndex} className="flex gap-4">
+            <div className="text-gold font-medium w-16 shrink-0 pt-1">{activity.time}</div>
+            <div className="relative pl-6 pb-2 before:absolute before:left-0 before:top-2.5 before:w-2 before:h-2 before:bg-maroon before:rounded-full after:absolute after:left-[3px] after:top-5 after:bottom-[-16px] after:w-[2px] after:bg-[#333] last:after:hidden">
+              <p className="text-gray-300">{activity.description}</p>
+              <button
+                onClick={() => onAddToCalendar(activity)}
+                className="text-xs bg-gold/10 hover:bg-gold/20 text-gold border border-gold/30 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 mt-3 mb-2"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                Add to Google Calendar
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
 }
 
 const generateGoogleCalendarLink = (activity: Activity, selectedDateStr: string) => {
@@ -60,14 +129,11 @@ export default function ItineraryPage() {
   const MAX_CHARS = 500;
 
   useEffect(() => {
-    // Read the username from localStorage
-    if (typeof window !== "undefined") {
-      const storedName = localStorage.getItem("balinest_username");
-      if (storedName && storedName !== userName) {
-        setUserName(storedName);
-      }
+    const storedName = localStorage.getItem("balinest_username");
+    if (storedName) {
+      setUserName(storedName);
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleGenerate = async () => {
     if (!userInput.trim() || userInput.length > MAX_CHARS) return;
@@ -251,37 +317,15 @@ export default function ItineraryPage() {
             {/* Timeline */}
             <div className="flex flex-col gap-6 mt-4">
               {itinerary.days.map((day, dayIndex) => (
-                <motion.div 
-                  key={day.day}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: dayIndex * 0.15 }}
-                  className="bg-[#111] border border-[#333] rounded-2xl overflow-hidden shadow-lg"
-                >
-                  <div className="bg-linear-to-r from-[#1a1a1a] to-[#222] p-5 border-b border-[#333]">
-                    <h4 className="text-gold font-bold text-xl">Day {day.day}: {day.title}</h4>
-                  </div>
-                  <div className="p-5 flex flex-col gap-4">
-                    {day.activities.map((activity, actIndex) => (
-                      <div key={actIndex} className="flex gap-4">
-                        <div className="text-gold font-medium w-16 shrink-0 pt-1">{activity.time}</div>
-                        <div className="relative pl-6 pb-2 before:absolute before:left-0 before:top-2.5 before:w-2 before:h-2 before:bg-maroon before:rounded-full after:absolute after:left-[3px] after:top-5 after:bottom-[-16px] after:w-[2px] after:bg-[#333] last:after:hidden">
-                          <p className="text-gray-300">{activity.description}</p>
-                          <button
-                            onClick={() => {
-                              setSelectedActivityForCalendar(activity);
-                              setCalendarDate(new Date().toISOString().split('T')[0]);
-                            }}
-                            className="text-xs bg-gold/10 hover:bg-gold/20 text-gold border border-gold/30 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 mt-3 mb-2"
-                          >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            Add to Google Calendar
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
+                <DayCard 
+                  key={day.day} 
+                  day={day} 
+                  dayIndex={dayIndex} 
+                  onAddToCalendar={(activity) => {
+                    setSelectedActivityForCalendar(activity);
+                    setCalendarDate(new Date().toISOString().split('T')[0]);
+                  }} 
+                />
               ))}
             </div>
 

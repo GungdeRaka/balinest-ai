@@ -22,6 +22,11 @@ export async function POST(req: NextRequest) {
           {
             day: 1,
             title: "Arrival & Serene Beginnings in Ubud",
+            recommended_restaurant: {
+              name: "Warung Bambu Ubud",
+              cuisine: "Traditional Balinese",
+              why_its_good: "Authentic flavors in a peaceful bamboo setting, perfect for your first night."
+            },
             activities: [
               { 
                 time: "14:00", 
@@ -78,6 +83,11 @@ export async function POST(req: NextRequest) {
         {
           "day": 1,
           "title": "Short poetic title for the day",
+          "recommended_restaurant": {
+            "name": "Name of a real, family-friendly local restaurant",
+            "cuisine": "Type of food",
+            "why_its_good": "1 sentence on why it fits this family's constraints."
+          },
           "activities": [
             {
               "time": "HH:MM",
@@ -118,11 +128,12 @@ export async function POST(req: NextRequest) {
     console.log("Successfully parsed JSON response");
     return NextResponse.json(jsonResponse);
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in /api/generate:", error);
+    const errorMessage = error instanceof Error ? error.message : "Bli Tourah is having trouble connecting to the spirits. Please try again later.";
     
     return NextResponse.json(
-      { error: error.message || "Bli Tourah is having trouble connecting to the spirits. Please try again later." },
+      { error: errorMessage },
       { status: 500 }
     );
   }

@@ -3,6 +3,15 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { GlossaryTooltip } from "@/components/GlossaryTooltip";
+import { GlossaryText } from "@/components/GlossaryText";
+
+const FULL_GLOSSARY = {
+  "Om Swastyastu": "A Balinese greeting, meaning 'May God bless you' or 'May you be in a state of goodness.'",
+  "Suksma": "Thank you.",
+  "Astungkara": "God willing or Hopefully.",
+  "Bli": "A respectful term for an older brother or a peer male."
+};
 
 interface Activity {
   time: string;
@@ -48,13 +57,13 @@ export default function ItineraryPage() {
   const [selectedActivityForCalendar, setSelectedActivityForCalendar] = useState<Activity | null>(null);
   const [calendarDate, setCalendarDate] = useState<string>("");
   
-  const MAX_CHARS = 1000;
+  const MAX_CHARS = 500;
 
   useEffect(() => {
     // Read the username from localStorage
     if (typeof window !== "undefined") {
       const storedName = localStorage.getItem("balinest_username");
-      if (storedName) {
+      if (storedName && storedName !== userName) {
         setUserName(storedName);
       }
     }
@@ -91,9 +100,10 @@ export default function ItineraryPage() {
       }
       
       setItinerary(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred.";
       console.error("Itinerary generation error details:", err);
-      setError(err.message || "An unexpected error occurred.");
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -105,7 +115,9 @@ export default function ItineraryPage() {
     setError("");
   };
 
-  const avatarSrc = isLoading ? "/bli-tourah-thinking.png" : "/bli-tourah-smile.png";
+  const avatarSrc = isLoading 
+    ? "/bli-tourah-thinking.png" 
+    : (userInput.length > 120 ? "/bli-tourah-panic.png" : "/bli-tourah-smile.png");
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col p-6 relative overflow-hidden font-sans">
@@ -153,7 +165,7 @@ export default function ItineraryPage() {
           {/* Avatar */}
           <div className="relative group shrink-0">
             <div className={`absolute -inset-2 bg-linear-to-r from-maroon to-gold rounded-full blur-md opacity-40 transition duration-500 ${isLoading ? 'animate-pulse opacity-80' : 'group-hover:opacity-60'}`}></div>
-            <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-gold bg-[#1a1a1a] shadow-[0_0_20px_rgba(212,175,55,0.2)]">
+            <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-gold bg-[#1a1a1a] shadow-maroon">
               <Image src={avatarSrc} alt="Bli Tourah" fill className="object-cover" priority />
             </div>
           </div>
@@ -161,9 +173,9 @@ export default function ItineraryPage() {
           {/* Chat Bubble / Greeting */}
           <div className="relative bg-[#1a1a1a] border border-[#333] rounded-3xl p-6 md:p-8 shadow-xl mt-4 md:mt-0 flex-1">
             {!itinerary ? (
-              <p className="text-lg md:text-xl font-light leading-relaxed text-gray-200">
+              <p className="text-lg md:text-xl transition-all duration-500 font-light leading-relaxed text-gray-200">
                 {isLoading ? "Working on your magic itinerary..." : (
-                  <>Suksma, <span className="text-gold font-medium">{userName}</span> family! Now, tell me everything. How many days, what is your budget, who is traveling, and what do you want to avoid?</>
+                  <><GlossaryTooltip word="Suksma" definition="Thank you." />, <span className="text-gold font-medium">{userName}</span> family! {userInput.length > 120 ? "Perfect! You've given me some great details to work with. I have everything I need to weave some magic into your trip" : "Now, tell me everything. How many days, what is your budget, who is traveling, and what do you want to avoid?"}</>
                 )}
               </p>
             ) : (
@@ -201,7 +213,7 @@ export default function ItineraryPage() {
                 onChange={(e) => setUserInput(e.target.value)}
                 maxLength={MAX_CHARS}
                 disabled={isLoading}
-                className="w-full min-h-[240px] md:min-h-[300px] bg-[#111] border-2 border-[#333] focus:border-gold hover:border-[#444] disabled:opacity-50 disabled:cursor-not-allowed text-white p-6 rounded-2xl focus:outline-none transition-all text-lg placeholder-gray-600 shadow-inner resize-y"
+                className={`w-full min-h-[240px] md:min-h-[300px] bg-[#111] border-2 border-[#333] ${ userInput.length > 120 ? 'focus:border-maroon/50' : 'focus:border-gold'} hover:border-[#444] disabled:opacity-50 disabled:cursor-not-allowed text-white p-6 rounded-2xl focus:outline-none transition-all text-lg placeholder-gray-600 shadow-inner resize-y`}
                 placeholder="E.g., We're staying for 7 days. Budget is around $2000. It's just my wife and me. We hate crowded tourist traps and love hidden waterfalls and authentic food..."
               ></textarea>
               <div className={`absolute bottom-4 right-6 text-sm ${userInput.length >= MAX_CHARS ? 'text-red-500' : 'text-gray-500'}`}>
@@ -229,9 +241,11 @@ export default function ItineraryPage() {
             {/* Insight Card */}
             <div className="bg-maroon/20 border-l-4 border-gold p-6 rounded-r-2xl">
               <h3 className="text-gold font-bold text-xl mb-2 flex items-center gap-2">
-                <span className="text-2xl">💡</span> Bli Tourah's Local Insight
+                <span className="text-2xl">💡</span> <GlossaryTooltip word="Bli" definition="A respectful term for an older brother or a peer male." /> Tourah&apos;s Local Insight
               </h3>
-              <p className="text-gray-200 text-lg leading-relaxed">{itinerary.insight}</p>
+              <div className="text-gray-200 text-lg leading-relaxed">
+                <GlossaryText text={itinerary.insight} glossary={FULL_GLOSSARY} />
+              </div>
             </div>
 
             {/* Timeline */}

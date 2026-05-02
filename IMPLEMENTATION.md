@@ -1,15 +1,24 @@
+# Implementation Plan: BaliNest AI 🌴
 
-# Implementation: Google Calendar Utility (No Auth Required)
-On the State 3 Output UI (itinerary result), inside each Activity Card, add an "Add to Google Calendar" button. Use this helper function to generate the href link dynamically from the AI's output:
+## 1. Junior Developer Tasks: Balinese Glossary & UI Polish
 
-``` // Utility function to place in frontend
-export const generateGoogleCalendarLink = (activity) => {
-  const baseUrl = "[https://calendar.google.com/calendar/render?action=TEMPLATE](https://calendar.google.com/calendar/render?action=TEMPLATE)";
-  const title = encodeURIComponent(activity.title);
-  const details = encodeURIComponent(activity.description);
-  const location = encodeURIComponent(activity.location);
-  const dates = `${activity.start_time}/${activity.end_time}`;
-  
-  return `${baseUrl}&text=${title}&dates=${dates}&details=${details}&location=${location}`;
-};
-```
+### Task 1.1: Interactive Balinese Glossary (Tooltips)
+Implement a tooltip feature for specific Balinese words used throughout the app (e.g., "Suksma", "Astungkara", "Om Swastyastu").
+- **Requirement:** 
+  - On **Desktop**: Show a small container (tooltip) with the word's meaning when hovering.
+  - On **Mobile**: Show the tooltip when the word is clicked/tapped.
+- **Words to include:**
+  - **Om Swastyastu**: A Balinese greeting, meaning "May God bless you" or "May you be in a state of goodness."
+  - **Suksma**: "Thank you."
+  - **Astungkara**: "God willing" or "Hopefully."
+  - **Bli**: A respectful term for an older brother or a peer male.
+
+### Task 1.2: Panic Mode State
+Implement a visual feedback loop in the itinerary generator to show Bli Tourah's "overwhelmed" state when the user provides a lot of detail.
+- **Requirement:**
+  - Track the character count of the `<textarea>` in State 2.
+  - When `userInput.length > 120`, switch the Bli Tourah avatar from `bli-tourah-smile.png` to `bli-tourah-panic.png`.
+  - Ensure the transition is smooth (using Framer Motion).
+
+---
+

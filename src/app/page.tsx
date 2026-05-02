@@ -1,30 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { Typewriter } from "@/components/Typewriter";
 
 const GREETING_TEXT = "Om Swastyastu! Welcome to BaliNest AI. I am Bli Tourah, your local AI concierge. Before we craft your perfect island getaway, what name should I put on your itinerary?";
 
+const GLOSSARY = {
+  "Om Swastyastu": "A Balinese greeting, meaning 'May God bless you' or 'May you be in a state of goodness.'",
+  "Bli": "A respectful term for an older brother or a peer male."
+};
+
 export default function Home() {
   const [name, setName] = useState("");
-  const [displayedText, setDisplayedText] = useState("");
   const router = useRouter();
-
-  useEffect(() => {
-    let currentIndex = 0;
-    const interval = setInterval(() => {
-      if (currentIndex <= GREETING_TEXT.length) {
-        setDisplayedText(GREETING_TEXT.slice(0, currentIndex));
-        currentIndex++;
-      } else {
-        clearInterval(interval);
-      }
-    }, 40); // Typing speed
-
-    return () => clearInterval(interval);
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,10 +40,9 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           className="relative bg-[#1a1a1a] border-2 border-maroon rounded-3xl p-6 md:p-8 shadow-2xl max-w-xl w-full"
         >
-          <p className="text-lg md:text-xl font-light leading-relaxed text-gray-200 min-h-[120px]">
-            {displayedText}
-            <span className="animate-pulse inline-block ml-1 w-2 h-5 bg-gold align-middle"></span>
-          </p>
+          <div className="text-lg md:text-xl font-light leading-relaxed text-gray-200 min-h-[120px]">
+            <Typewriter text={GREETING_TEXT} glossary={GLOSSARY} />
+          </div>
           {/* Chat Bubble Tail pointing downwards to the avatar */}
           <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[16px] border-l-transparent border-t-[16px] border-t-maroon border-r-[16px] border-r-transparent"></div>
           <div className="absolute -bottom-[12px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[14px] border-l-transparent border-t-[14px] border-t-[#1a1a1a] border-r-[14px] border-r-transparent"></div>

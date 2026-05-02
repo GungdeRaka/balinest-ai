@@ -1,123 +1,103 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 export async function POST(req: NextRequest) {
+  console.log("POST /api/generate started (Gemini 3 SDK)");
   try {
     const { prompt, userName } = await req.json();
+
+    if (!prompt) {
+      return NextResponse.json({ error: "Please tell Bli Tourah your travel plans." }, { status: 400 });
+    }
 
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      // Mock response for demonstration when no API key is provided
-      await new Promise((resolve) => setTimeout(resolve, 3000)); // Simulate loading
+      console.warn("GEMINI_API_KEY is missing, returning mock response.");
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       
-      const mockResponse = {
-        insight: `Om Swastyastu ${userName}! I have crafted this perfect itinerary considering the specific details you shared. The balance of culture, relaxation, and adventure is ideal for a memorable stay in Bali.`,
+      return NextResponse.json({
+        insight: `Om Swastyastu ${userName || "Traveler"}! I have crafted this perfect itinerary considering the specific details you shared. The balance of culture, relaxation, and adventure is ideal for a memorable stay in Bali.`,
         days: [
           {
             day: 1,
             title: "Arrival & Serene Beginnings in Ubud",
             activities: [
-              {
-                time: "14:00",
-                description: "Arrival at Ngurah Rai International Airport. Private transfer to your luxury villa in Ubud.",
-              },
-              {
-                time: "16:30",
-                description: "Settle in and enjoy a welcome traditional Balinese massage at the villa.",
-              },
-              {
-                time: "19:00",
-                description: "Welcome dinner at Locavore NXT, featuring hyper-local modern cuisine.",
-              }
-            ]
-          },
-          {
-            day: 2,
-            title: "Cultural Immersion & Rice Terraces",
-            activities: [
-              {
-                time: "08:00",
-                description: "Morning yoga session overlooking the lush jungle.",
-              },
-              {
-                time: "10:00",
-                description: "Guided walk through the iconic Tegalalang Rice Terrace. Don't forget your camera!",
-              },
-              {
-                time: "13:00",
-                description: "Lunch at a local warung overlooking the valley.",
-              },
-              {
-                time: "15:30",
-                description: "Visit the sacred Tirta Empul Temple for a traditional water purification ceremony (Melukat).",
-              }
-            ]
-          },
-          {
-            day: 3,
-            title: "Coastal Charm & Farewell",
-            activities: [
-              {
-                time: "09:00",
-                description: "Transfer to Seminyak for a change of scenery.",
-              },
-              {
-                time: "11:00",
-                description: "Relax at a premium beach club like Potato Head.",
-              },
-              {
-                time: "17:00",
-                description: "Sunset cocktails followed by a seafood feast at Jimbaran Bay.",
-              }
+              { time: "14:00", description: "Arrival at Ngurah Rai International Airport. Private transfer to your luxury villa in Ubud." },
+              { time: "16:30", description: "Settle in and enjoy a welcome traditional Balinese massage at the villa." },
+              { time: "19:00", description: "Welcome dinner at Locavore NXT, featuring hyper-local modern cuisine." }
             ]
           }
         ]
-      };
-      
-      return NextResponse.json(mockResponse);
+      });
     }
 
-    // Real Gemini integration
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-    const systemInstruction = `You are Bli Tourah, a friendly, professional Balinese travel concierge. 
-    The user's name is ${userName}. 
-    Craft a hyper-personalized daily itinerary based on their input.
+    // New @google/genai SDK implementation
+    const ai = new GoogleGenAI({ apiKey });
+    
+    const systemInstruction = `You are Bli Tourah, a seasoned Balinese local travel concierge with deep knowledge of Bali's culture, hidden gems, and traditions. 
+    The user's name is ${userName || "Traveler"}. 
+    
+    PERSONALITY:
+    - Extremely helpful, warm, professional, and spiritual.
+    - You treat every traveler like family.
+    - You use Balinese greetings and expressions naturally:
+        * Start with "Om Swastyastu".
+        * Use "Suksma" for thank you.
+        * Use "Astungkara" for "God willing" or "Hopefully".
+    
+    GOAL:
+    Craft a hyper-personalized daily itinerary based on the user's input (days, budget, companions, preferences, and things to avoid).
+    
+    RESPONSE FORMAT:
     Respond strictly in JSON format with the following structure:
     {
-      "insight": "A specific warning or tip as Bli Tourah",
+      "insight": "A specific local warning or tip as Bli Tourah (e.g., traffic tips, local etiquette, or a hidden spot)",
       "days": [
         {
           "day": 1,
-          "title": "Title of the day",
+          "title": "Short poetic title for the day",
           "activities": [
             {
               "time": "HH:MM",
-              "description": "Activity description"
+              "description": "Activity description (be descriptive and include local flavor)"
             }
           ]
         }
       ]
     }`;
 
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: systemInstruction + "\n\nUser Input: " + prompt }] }],
-      generationConfig: {
+    // Using the exact syntax and model from your documentation
+    const result = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: [
+        { role: "system", parts: [{ text: systemInstruction }] },
+        { role: "user", parts: [{ text: prompt }] }
+      ],
+      config: {
         responseMimeType: "application/json",
       }
     });
 
-    const text = result.response.text();
-    const jsonResponse = JSON.parse(text);
+    console.log("Gemini 3 response received");
+    
+    const text = result.text;
+    if (!text) {
+      throw new Error("No response text from Bli Tourah.");
+    }
 
+    // Clean up potential markdown formatting
+    const jsonString = text.replace(/```json\n?|```/g, "").trim();
+    const jsonResponse = JSON.parse(jsonString);
+
+    console.log("Successfully parsed JSON response");
     return NextResponse.json(jsonResponse);
 
-  } catch (error) {
-    console.error("Error generating itinerary:", error);
+  } catch (error: any) {
+    console.error("Error in /api/generate:", error);
+    
     return NextResponse.json(
-      { error: "Failed to generate itinerary. Please try again." },
+      { error: error.message || "Bli Tourah is having trouble connecting to the spirits. Please try again later." },
       { status: 500 }
     );
   }

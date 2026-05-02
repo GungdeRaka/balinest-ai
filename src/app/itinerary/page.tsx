@@ -103,6 +103,11 @@ function DayCard({ day, dayIndex, onAddToCalendar }: {
   );
 }
 
+const getTourGuideMapLink = () => {
+  const query = encodeURIComponent("tour guide or travel agency in Bali");
+  return `https://www.google.com/maps/search/?api=1&query=${query}`;
+};
+
 const generateGoogleCalendarLink = (activity: Activity, selectedDateStr: string) => {
   const baseUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE";
   const title = encodeURIComponent(activity.title || activity.description.substring(0, 50));
@@ -333,13 +338,24 @@ export default function ItineraryPage() {
               ))}
             </div>
 
-            <button 
-              type="button"
-              onClick={handleStartOver}
-              className="w-full mt-6 bg-transparent border-2 border-gold hover:bg-gold hover:text-black text-gold font-bold py-4 rounded-2xl transition-all text-lg"
-            >
-              Start Over
-            </button>
+            <div className="flex flex-col gap-4 mt-8 w-full items-center justify-center">
+              <a 
+                href={getTourGuideMapLink()}
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-full max-w-md bg-amber-500 hover:bg-amber-600 text-black font-bold py-3 px-4 rounded-xl transition-all text-center shadow-lg transform hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-2"
+              >
+                Find Local Guides on Maps 🗺️
+              </a>
+
+              <button 
+                type="button"
+                onClick={handleStartOver}
+                className="w-full max-w-md bg-transparent border-2 border-gold hover:bg-gold hover:text-black text-gold font-bold py-3 px-4 rounded-xl transition-all text-lg shadow-md"
+              >
+                Start Over
+              </button>
+            </div>
           </motion.div>
         )}
 

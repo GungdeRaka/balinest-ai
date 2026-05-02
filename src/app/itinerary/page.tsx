@@ -6,6 +6,10 @@ import { motion } from "framer-motion";
 
 interface Activity {
   time: string;
+  title?: string;
+  location?: string;
+  start_time?: string;
+  end_time?: string;
   description: string;
 }
 
@@ -20,12 +24,29 @@ interface ItineraryResponse {
   days: DayPlan[];
 }
 
+const generateGoogleCalendarLink = (activity: Activity, selectedDateStr: string) => {
+  const baseUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE";
+  const title = encodeURIComponent(activity.title || activity.description.substring(0, 50));
+  const details = encodeURIComponent(activity.description);
+  const location = encodeURIComponent(activity.location || "Bali");
+  
+  const dateStr = selectedDateStr.replace(/-/g, "");
+  const startTime = activity.start_time ? activity.start_time.replace(":", "") + "00" : "090000";
+  const endTime = activity.end_time ? activity.end_time.replace(":", "") + "00" : "100000";
+  
+  const dates = `${dateStr}T${startTime}/${dateStr}T${endTime}`;
+  
+  return `${baseUrl}&text=${title}&dates=${dates}&details=${details}&location=${location}`;
+};
+
 export default function ItineraryPage() {
   const [userName, setUserName] = useState("Traveler");
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [itinerary, setItinerary] = useState<ItineraryResponse | null>(null);
   const [error, setError] = useState("");
+  const [selectedActivityForCalendar, setSelectedActivityForCalendar] = useState<Activity | null>(null);
+  const [calendarDate, setCalendarDate] = useState<string>("");
   
   const MAX_CHARS = 1000;
 
@@ -84,7 +105,7 @@ export default function ItineraryPage() {
     setError("");
   };
 
-  const avatarSrc = isLoading ? "/bli-tourah-panic.png" : "/bli-tourah-smile.png";
+  const avatarSrc = isLoading ? "/bli-tourah-thinking.png" : "/bli-tourah-smile.png";
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col p-6 relative overflow-hidden font-sans">
@@ -232,6 +253,16 @@ export default function ItineraryPage() {
                         <div className="text-gold font-medium w-16 shrink-0 pt-1">{activity.time}</div>
                         <div className="relative pl-6 pb-2 before:absolute before:left-0 before:top-2.5 before:w-2 before:h-2 before:bg-maroon before:rounded-full after:absolute after:left-[3px] after:top-5 after:bottom-[-16px] after:w-[2px] after:bg-[#333] last:after:hidden">
                           <p className="text-gray-300">{activity.description}</p>
+                          <button
+                            onClick={() => {
+                              setSelectedActivityForCalendar(activity);
+                              setCalendarDate(new Date().toISOString().split('T')[0]);
+                            }}
+                            className="text-xs bg-gold/10 hover:bg-gold/20 text-gold border border-gold/30 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 mt-3 mb-2"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            Add to Google Calendar
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -251,6 +282,46 @@ export default function ItineraryPage() {
         )}
 
       </main>
+
+      {/* Calendar Date Modal */}
+      {selectedActivityForCalendar && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-[#1a1a1a] border border-[#333] rounded-2xl p-6 max-w-sm w-full flex flex-col items-center shadow-2xl relative"
+          >
+            <button 
+              onClick={() => setSelectedActivityForCalendar(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div className="w-24 h-24 relative mb-4 rounded-full overflow-hidden border-2 border-gold bg-[#111]">
+              <Image src="/bli-tourah-thinking.png" alt="Bli Tourah Thinking" fill className="object-cover" />
+            </div>
+            <h3 className="text-gold font-bold text-xl mb-2 text-center">Select Date</h3>
+            <p className="text-sm text-gray-300 text-center mb-4">When are you planning to do this activity?</p>
+            <input 
+              type="date" 
+              value={calendarDate}
+              onChange={(e) => setCalendarDate(e.target.value)}
+              className="w-full bg-[#111] border border-[#333] focus:border-gold text-white p-3 rounded-xl mb-4 outline-none"
+              style={{ colorScheme: 'dark' }}
+            />
+            <button 
+              onClick={() => {
+                const link = generateGoogleCalendarLink(selectedActivityForCalendar, calendarDate);
+                window.open(link, '_blank');
+                setSelectedActivityForCalendar(null);
+              }}
+              className="w-full bg-gold hover:bg-gold-hover text-black font-bold py-3 rounded-xl transition-colors"
+            >
+              Add to Calendar
+            </button>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

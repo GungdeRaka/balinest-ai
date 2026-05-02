@@ -23,9 +23,30 @@ export async function POST(req: NextRequest) {
             day: 1,
             title: "Arrival & Serene Beginnings in Ubud",
             activities: [
-              { time: "14:00", description: "Arrival at Ngurah Rai International Airport. Private transfer to your luxury villa in Ubud." },
-              { time: "16:30", description: "Settle in and enjoy a welcome traditional Balinese massage at the villa." },
-              { time: "19:00", description: "Welcome dinner at Locavore NXT, featuring hyper-local modern cuisine." }
+              { 
+                time: "14:00", 
+                title: "Airport Arrival & Transfer",
+                location: "Ngurah Rai International Airport",
+                start_time: "14:00",
+                end_time: "16:00",
+                description: "Arrival at Ngurah Rai International Airport. Private transfer to your luxury villa in Ubud." 
+              },
+              { 
+                time: "16:30", 
+                title: "Welcome Massage",
+                location: "Your Villa in Ubud",
+                start_time: "16:30",
+                end_time: "18:00",
+                description: "Settle in and enjoy a welcome traditional Balinese massage at the villa." 
+              },
+              { 
+                time: "19:00", 
+                title: "Welcome Dinner at Locavore NXT",
+                location: "Locavore NXT, Ubud",
+                start_time: "19:00",
+                end_time: "21:30",
+                description: "Welcome dinner at Locavore NXT, featuring hyper-local modern cuisine." 
+              }
             ]
           }
         ]
@@ -60,6 +81,10 @@ export async function POST(req: NextRequest) {
           "activities": [
             {
               "time": "HH:MM",
+              "title": "Short title for the activity (for calendar)",
+              "location": "Specific location name",
+              "start_time": "HH:MM",
+              "end_time": "HH:MM",
               "description": "Activity description (be descriptive and include local flavor)"
             }
           ]

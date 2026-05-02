@@ -10,7 +10,8 @@ const FULL_GLOSSARY = {
   "Om Swastyastu": "A Balinese greeting, meaning 'May God bless you' or 'May you be in a state of goodness.'",
   "Suksma": "Thank you.",
   "Astungkara": "God willing or Hopefully.",
-  "Bli": "A respectful term for an older brother or a peer male."
+  "Bli": "A respectful term for an older brother or a peer male.",
+  "Ampura": "I'm sorry or Forgive me."
 };
 
 interface Activity {
@@ -118,7 +119,12 @@ const generateGoogleCalendarLink = (activity: Activity, selectedDateStr: string)
 };
 
 export default function ItineraryPage() {
-  const [userName, setUserName] = useState("Traveler");
+  const [userName] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("balinest_username") || "Traveler";
+    }
+    return "Traveler";
+  });
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [itinerary, setItinerary] = useState<ItineraryResponse | null>(null);
@@ -129,11 +135,8 @@ export default function ItineraryPage() {
   const MAX_CHARS = 500;
 
   useEffect(() => {
-    const storedName = localStorage.getItem("balinest_username");
-    if (storedName) {
-      setUserName(storedName);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // Initializer handled by useState
+  }, []);
 
   const handleGenerate = async () => {
     if (!userInput.trim() || userInput.length > MAX_CHARS) return;
@@ -181,9 +184,11 @@ export default function ItineraryPage() {
     setError("");
   };
 
-  const avatarSrc = isLoading 
-    ? "/bli-tourah-thinking.png" 
-    : (userInput.length > 120 ? "/bli-tourah-panic.png" : "/bli-tourah-smile.png");
+  const avatarSrc = error 
+    ? "/bli-tourah-panic.png"
+    : (isLoading 
+        ? "/bli-tourah-thinking.png" 
+        : (userInput.length > 120 ? "/bli-tourah-panic.png" : "/bli-tourah-smile.png"));
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col p-6 relative overflow-hidden font-sans">
@@ -194,7 +199,7 @@ export default function ItineraryPage() {
           initial={{ x: "0%" }}
           animate={{ x: "-100%" }}
           transition={{ duration: 1.2, ease: [0.25, 1, 0.5, 1], delay: 0.2 }}
-          className="w-1/2 h-full bg-linear-to-rrom-background to-maroon border-r-4 border-gold shadow-[10px_0_30px_rgba(0,0,0,0.8)] relative"
+          className="w-1/2 h-full bg-linear-to-r from-background to-maroon border-r-4 border-gold shadow-[10px_0_30px_rgba(0,0,0,0.8)] relative"
         >
           {/* Gate Detailing Placeholder */}
           <div className="absolute right-0 top-0 bottom-0 w-8 bg-[url('/pattern-placeholder.png')] opacity-20"></div>
@@ -230,7 +235,7 @@ export default function ItineraryPage() {
         >
           {/* Avatar */}
           <div className="relative group shrink-0">
-            <div className={`absolute -inset-2 bg-linear-to-r from-maroon to-gold rounded-full blur-md opacity-40 transition duration-500 ${isLoading ? 'animate-pulse opacity-80' : 'group-hover:opacity-60'}`}></div>
+            <div className={`absolute -inset-2 bg-linear-to-r from-maroon to-gold rounded-full blur-md opacity-40 transition duration-500 ${isLoading || error ? 'animate-pulse opacity-80' : 'group-hover:opacity-60'}`}></div>
             <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-gold bg-[#1a1a1a] shadow-maroon">
               <Image src={avatarSrc} alt="Bli Tourah" fill className="object-cover" priority />
             </div>
@@ -238,7 +243,12 @@ export default function ItineraryPage() {
 
           {/* Chat Bubble / Greeting */}
           <div className="relative bg-[#1a1a1a] border border-[#333] rounded-3xl p-6 md:p-8 shadow-xl mt-4 md:mt-0 flex-1">
-            {!itinerary ? (
+            {error ? (
+              <div className="text-lg md:text-xl font-light leading-relaxed text-red-200">
+                <GlossaryTooltip word="Ampura" definition="I'm sorry or Forgive me." />, my friend! 😅 It seems the travel spirits are a bit overwhelmed right now (or my coconut telegraph is broken). Let me catch my breath, and please try generating your magic itinerary again in a moment!
+                <div className="mt-2 text-xs text-red-400/60 font-mono">Technical details: {error}</div>
+              </div>
+            ) : !itinerary ? (
               <p className="text-lg md:text-xl transition-all duration-500 font-light leading-relaxed text-gray-200">
                 {isLoading ? "Working on your magic itinerary..." : (
                   <><GlossaryTooltip word="Suksma" definition="Thank you." />, <span className="text-gold font-medium">{userName}</span> family! {userInput.length > 120 ? "Perfect! You've given me some great details to work with. I have everything I need to weave some magic into your trip" : "Now, tell me everything. How many days, what is your budget, who is traveling, and what do you want to avoid?"}</>
@@ -258,12 +268,6 @@ export default function ItineraryPage() {
             <div className="block md:hidden absolute top-[-14px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-14 border-l-transparent border-r-14 border-r-transparent border-b-14 border-b-[#1a1a1a]"></div>
           </div>
         </motion.div>
-
-        {error && (
-          <div className="bg-red-900/50 border border-red-500 text-red-200 p-4 rounded-xl text-center">
-            {error}
-          </div>
-        )}
 
         {!itinerary ? (
           /* Input Section */
